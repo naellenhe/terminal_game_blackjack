@@ -1,3 +1,4 @@
+#v6 new feature added: player given chips $100 by default and able to place a bet
 ###basic rule: dealer must draw on 16 and stand on 17###
 
 #cards: just get random choice
@@ -14,6 +15,9 @@ judge = False
 who_win = ""
 #ask use if they want to continue to play
 continue_to_play = True
+player_chip = 100
+round_count = 0
+black_jack = False
 
 import random
 cards = {"A":1,"2":2,"3":3,"4":4,"5":5,"6":6,"7":7,"8":8,"9":9,"10":10,"J":10,"Q":10,"K":10}
@@ -34,7 +38,7 @@ def score_cal_aeleven(player_card):
     if "A" not in player_card:
         return score_cal(player_card)
     else:
-        return 10 *player_card.count("A") + score_cal(player_card)
+        return 10 + score_cal(player_card)
 
 #check if it's a count of 21 in two cards
 def natural_check(total):
@@ -144,6 +148,7 @@ def current_stat(player_card, dealer_card):
         print "{}'s cards:".format(player_name)
         print_card(player_card)
         print "total:{}".format(player_score)
+    print
 
 def dealer_play():
     global dealer_score
@@ -210,6 +215,8 @@ def winner_check(player_score, dealer_score):
     # game_continue = False     
 
 
+
+
 while continue_to_play == True:
     #cards appearance: instead of just showing numbers, making it look more like cards visually
     show_card = " " 
@@ -243,6 +250,20 @@ while continue_to_play == True:
     clines = [cline1, cline2, cline3, cline4, cline5, cline6]
     
     #####################game heading part####################
+    round_count += 1
+    
+    #player place a bet
+    print "Hey {}! Now you have ${}".format(player_name, player_chip)
+    place_bet = raw_input("How much do you want to bet? \n>$")
+    
+    #check if it's all valid number or within available bet amount
+    while not place_bet.isdigit() or not (player_chip >= int(place_bet) > 0):
+        place_bet = raw_input("Not a valid number or Not enough chips.\nPlease place a bet again.\n>$")
+    
+    #after checking the validity of "place_bet" input , convert to int type
+    place_bet = int(place_bet)
+    
+    
     #receive two cards: for example
     #dealer's cards show as */9 (total:9) -->second card face down(hidden by any icon like *)
     #player's cards show as 10/5 (total:15)
@@ -285,6 +306,7 @@ while continue_to_play == True:
     elif natural_check(player_score) or natural_check(player_score2):
         print "WOW! Black Jack!!!"
         print "You win!"
+        black_jack = True
         who_win = player_name
     
     else:
@@ -321,7 +343,7 @@ while continue_to_play == True:
             current_stat(player_card, dealer_card)
     
             if natural_check(player_score) or natural_check(player_score2):
-                print "You got Black Jack!"
+                print "You got 21!"
                 who_win = player_name
                 # dealer_play()
                 game_continue = False
@@ -340,9 +362,18 @@ while continue_to_play == True:
         else:
             print "!!!Not a valid command. Input [s] to stand; [h] to hit!!!"
             
-    
-    
-    
+    #betting result
+    if who_win == player_name:
+        if black_jack == True:
+            player_chip += place_bet * 2
+            print "You win ${}!".format(place_bet * 2)
+        else:
+            player_chip += place_bet
+            print "You win ${}!".format(place_bet)
+        
+    elif who_win == "Dealer":
+        player_chip -= place_bet
+        print "You lose ${}!".format(place_bet)        
     
     
     #########################game result############################
@@ -370,15 +401,24 @@ while continue_to_play == True:
     
     print
     print "##########################################"
-    print "______________Final result________________"
-    print "Winner is......{}!".format(who_win)
+    print "               Final result               "
+    print "##########################################"
+
+    # print "Winner is......{}!".format(who_win)
     # print frame_line
     # print "| Dealer's cards:{}, total:{}".format(dealer_card, dealer_score2)
     # print "| {}'s cards:{}, total:{}".format(player_name, player_card, player_score)
     # print frame_line
     final_stat(player_card, dealer_card)
     print "##########################################"
+    print "  Round {}    Winner: {}    ($)($){}".format(round_count, who_win, player_chip)
+    print "##########################################"
     
+    #if player has no more money, game over
+    if player_chip <= 0:
+        print "Sorry you don't have enough money. Go back to work!"
+        continue_to_play = False
+        break
     
     #ask player if not continue, end the while loop
     continue_to_play_command = raw_input("Do you want to continue to play? [y/n]\n>").lower()
