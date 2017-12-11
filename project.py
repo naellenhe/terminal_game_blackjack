@@ -6,7 +6,7 @@
 
 #dealer
 #player (get user's name)
-player_name = raw_input("What's your name: ").capitalize()
+player_name = raw_input("What's your name: ").title()
 game_continue = False
 # hit_num = 0
 # frame_line = " "+ "-" * (40 + hit_num)
@@ -65,25 +65,46 @@ def bust_check(total):
 #         print "| {}'s cards:{}, total:{}".format(player_name, player_card, player_score)
 #     print frame_line
 
+
+#v5 fearture added: change the apprearance of dealer's face down card 
 def print_card(player_card):
     global show_card
     player_card_amount = len(player_card)
     print_line_order = 1
-    for line, cline in zip(lines, clines):
-        if print_line_order == 2:
-            for card in player_card:
-                if card == "10":
-                    show_card = card
-                    line = "|{}".format(show_card)
-                    print line,
-                else:
-                    show_card = card
-                    line = "| {}".format(show_card)
-                    print line,
-            print cline + "\t"
-        else:
-            print line * player_card_amount + cline
-        print_line_order += 1
+    
+    #if it's dealer's card, then first item will be "@"
+    if player_card[0] =="@":
+        for dline, line, cline in zip(dlines, lines, clines):
+            if print_line_order == 2:
+                sec_line = ""
+                for card in player_card[1:]:
+                    if card == "10":
+                        show_card = card
+                        sec_line += "|{} ".format(show_card)
+                    else:
+                        show_card = card
+                        sec_line += "| {} ".format(show_card)
+    
+                print dline + sec_line + cline
+            else:
+                print dline + line * (player_card_amount - 1) + cline
+            print_line_order += 1
+    else:
+        for line, cline in zip(lines, clines):
+            if print_line_order == 2:
+                for card in player_card:
+                    if card == "10":
+                        show_card = card
+                        line = "|{}".format(show_card)
+                        print line,
+                    else:
+                        show_card = card
+                        line = "| {}".format(show_card)
+                        print line,
+                print cline + "\t"
+            else:
+                print line * player_card_amount + cline
+            print_line_order += 1
 
 #until player decided to Stand, dealer's first card should be faced down
 # def hidden_card(dealer_card):
@@ -188,7 +209,7 @@ def winner_check(player_score, dealer_score):
         who_win = "TIE"
     # game_continue = False     
 
-#v4 feature added: player can contine to play using while loop and boolean 
+
 while continue_to_play == True:
     #cards appearance: instead of just showing numbers, making it look more like cards visually
     show_card = " " 
@@ -200,9 +221,19 @@ while continue_to_play == True:
     line6 = " ---"
     lines = [line1, line2, line3, line4, line5, line6]
     
+#v5 fearture added: change the apprearance of dealer's face down card     
+    dline1 = " ---"
+    dline2 = "|///"
+    dline3 = "|///"
+    dline4 = "|///"
+    dline5 = "|///"
+    dline6 = " ---"
+    dlines = [dline1, dline2, dline3, dline4, dline5, dline6]
+    
+    
     #closing frame lines
     #random choice of emoticon: v3 feature added
-    emoticon = random.choice([":)", "<3", ":p", ":]", ":)", ":D", ":>", ":P", "=D", ":D", ":b"])
+    emoticon = random.choice([":)", "<3", ":p", ":]", ":)", ":D", ":>", ":P", "=D", ":D", ":b", "BJ"])
     cline1 = "--- "
     cline2 = "   |"
     cline3 = "   |"
@@ -348,6 +379,8 @@ while continue_to_play == True:
     final_stat(player_card, dealer_card)
     print "##########################################"
     
+    
+    #ask player if not continue, end the while loop
     continue_to_play_command = raw_input("Do you want to continue to play? [y/n]\n>").lower()
     if continue_to_play_command == "n":
         continue_to_play = False
@@ -355,9 +388,9 @@ while continue_to_play == True:
     elif continue_to_play_command == "y":
         print "Great! New game starts..........."
         print 
+        pass
     else:
         print "I guess you don't want to stop!"
-        print 
     
 
 
