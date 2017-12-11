@@ -1,5 +1,4 @@
-#v9 file write-in feature added
-#set new final score variable
+#v10 score module import
 
 ###basic rule: dealer must draw on 16 and stand on 17###
 
@@ -24,6 +23,21 @@ print """
 #player (get user's name)
 player_name = raw_input("What's your name: ").title()
 
+#v10 score module import
+import score
+if player_name in score.record.keys():
+    print "Welcome back!"
+    player_chip = score.record[player_name]
+    if player_chip <= 0:
+        print "We are giving you $100 as a welcome back gift!"
+        player_chip = 100
+else:
+    print "Welcome! New friend!"
+    player_chip = 100
+    filehandler = open("score.py","a")
+    filehandler.write("\nrecord['{}'] = 100".format(player_name))
+    filehandler.close()
+
 
 game_continue = False
 # hit_num = 0
@@ -33,14 +47,14 @@ who_win = ""
 #ask use if they want to continue to play
 continue_to_play = True
 #by default, give player $100
-player_chip = 100
+# player_chip = 100
 round_count = 0
 #v8 new added. make it look like the dealer's speaking
 message_format ="\n... ((  Dealer says ))  "
 
 
 #recording
-myfile = open("record.txt", "a")
+myfile = open("test.txt", "a")
 myfile.write("Player: {}\n".format(player_name))
 myfile.close()
 
@@ -286,7 +300,7 @@ while continue_to_play == True:
     
     #clines list means closing frame lines
     #random choice of emoticon: v3 feature added
-    emoticon = random.choice([":)", "<3", ":p", ":]", ":)", ":D", ":>", ":P", "=D", ":D", ":b", "BJ"])
+    emoticon = random.choice([":)", "<3", ":p", ":]", ":)", ":D", ":>", ":P", "=D", ":D", ":b"])
     cline1 = "--- "
     cline2 = "   |"
     cline3 = "   |"
@@ -301,6 +315,7 @@ while continue_to_play == True:
     round_count += 1
     #blackjack reset
     black_jack = False 
+    
     
     #player place a bet
     print "Hey {}! Now you have ${}".format(player_name, player_chip)
@@ -439,11 +454,12 @@ while continue_to_play == True:
             
     #betting result
     #multiplying "1.5" only when player has blackjack(first 2 served cards)
+    from math import ceil
     if who_win == player_name:
         if black_jack == True:
             player_chip += place_bet * 1.5
-            player_chip = int(player_chip) + 1 
-            print message_format + "You win ${}!".format(int(place_bet*1.5) + 1)
+            player_chip = int(ceil(player_chip)) 
+            print message_format + "You win ${}!".format(int(ceil(place_bet*1.5)))
         else:
             player_chip += place_bet
             print message_format + "You win ${}!".format(place_bet)
@@ -508,7 +524,7 @@ while continue_to_play == True:
     
     
     #recording
-    myfile = open("record.txt", "a")
+    myfile = open("test.txt", "a")
     myfile.write("Round {:<4}Bet ($){:<5}Winner: {:<10}Remaining ($){:<6}\n".format(round_count, place_bet, who_win, player_chip))
     myfile.write("  Dealer {} ({})    \n  {} {} ({})\n\n".format(dealer_card, dealer_score_final, player_name, player_card, player_score_final))    
     myfile.close()
@@ -543,9 +559,22 @@ while continue_to_play == True:
     ######################### game result ############################
 
 #recording
-myfile = open("record.txt", "a")
+myfile = open("test.txt", "a")
 myfile.write("----------------------- new ------------------------\n")
 myfile.close()
+
+
+#v10 save final score 
+filehandler = open("score.py","a")
+filehandler.write("\nrecord['{}'] = {}".format(player_name, player_chip))
+filehandler.close()
+
+
+
+
+
+
+
 
 
 ###(additional feature if possible:) ###
