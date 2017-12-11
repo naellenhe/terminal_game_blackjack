@@ -8,8 +8,10 @@
 #player (get user's name)
 player_name = raw_input("What's your name: ").capitalize()
 game_continue = False
-dealer_turn = False
-frame_line = " "+ "-" * 35
+hit_num = 0
+frame_line = " "+ "-" * (40 + hit_num)
+judge = False
+
 
 import random
 cards = {"A":1,"2":2,"3":3,"4":4,"5":5,"6":6,"7":7,"8":8,"9":9,"10":10,"J":10,"Q":10,"K":10}
@@ -48,7 +50,7 @@ def bust_check(total):
     else:
         return False
 
-############game main part###############
+#####################game heading part####################
 dealer_card = []
 player_card = []
 
@@ -59,44 +61,54 @@ for card in range(2):
 
 dealer_score = score_cal(dealer_card)
 player_score = score_cal(player_card)
+
 #dealer's first card should be faced down
 dealer_hidden_card = cards[dealer_card[0]]
 
+#store another variable, if the cards contain "A", plus 10 value, if not, stay as it is
 dealer_score2 = score_cal_aeleven(dealer_card)
 player_score2 = score_cal_aeleven(player_card)
 
+#to print out the current cards and sums
 def current_stat():
-    #if cards contain "A", show two totals
+    print frame_line
+    
+    #if cards contain "A", show two sums
     if "A" in dealer_card[1:]:
-        print "Dealer's cards:{}, total:{} or {}".format((["@"] + dealer_card[1:]), (dealer_score - dealer_hidden_card), (dealer_score2 - dealer_hidden_card))
+        print "| Dealer's cards:{}, total:{} or {}".format((["@"] + dealer_card[1:]), (dealer_score - dealer_hidden_card), (dealer_score2 - dealer_hidden_card))
     else:
-        print "Dealer's cards:{}, total:{}".format((["@"] + dealer_card[1:]), (dealer_score - dealer_hidden_card))
+        print "| Dealer's cards:{}, total:{}".format((["@"] + dealer_card[1:]), (dealer_score - dealer_hidden_card))
     
     if "A" in player_card:
-        print "{}'s cards:{}, total:{} or {}".format(player_name, player_card, player_score, player_score2)
+        print "| {}'s cards:{}, total:{} or {}".format(player_name, player_card, player_score, player_score2)
     else:
-        print "{}'s cards:{}, total:{}".format(player_name, player_card, player_score)
+        print "| {}'s cards:{}, total:{}".format(player_name, player_card, player_score)
 
+    print frame_line
+
+   
 current_stat()
+
 
 ####check if blackjack###
 #check if both got blackjack(very rare case)
 if (natural_check(dealer_score) or natural_check(dealer_score2)) and (natural_check(player_score) or natural_check(player_score2)):
     print "OMG! Both of you and dealer got BlackJack!"
-    #game_continue = False
-#check if dealer got blackjack
+
+#check if dealer got blackjack.
 elif natural_check(dealer_score) or natural_check(dealer_score2):
     print "Dealer has Black Jack!!!"
     print "You lose!"
-    #game_continue = False
+
 #checki if player got blackjack
 elif natural_check(player_score) or natural_check(player_score2):
     print "WOW! Black Jack!!!"
     print "You win!"
-    #game_continue = False
 
 else:
     game_continue = True
+
+#####################game heading part####################
 
 
 #player can decide to Hit/Stand
@@ -108,6 +120,55 @@ else:
   #----hit: continue the loop
   #----stand:  dealer's turn -> compare the sums -> determine lose or win
 
+def dealer_play():
+    global player_score
+    global player_score2
+    global dealer_score
+    global dealer_score2
+    global judge
+    if  21 > dealer_score > 17 or 21 > dealer_score2 > 17 :
+        winner_check(max(player_score,player_score2), max(dealer_score,dealer_score2))
+        game_continue = False
+        
+    #16 >= dealer_score
+    else:
+        while dealer_score2 <= 16:
+            dealer_card.append(card_giving())
+            dealer_score = score_cal(dealer_card)
+            dealer_score2 = score_cal_aeleven(dealer_card)
+            
+            if natural_check(dealer_score) or natural_check(dealer_score2):
+                print "Dealer's Black Jack!"
+                print "You lose!"
+                game_continue = False
+                judge = False
+                break
+                
+            elif bust_check(dealer_score2):
+                print "Dealer bust!!"
+                print "You are so lucky!"
+                game_continue = False
+                judge= False
+                break
+            
+            else:
+                #if none of 2 cases above happens, start judging who is the winner
+                judge = True
+        #when judge turned on to "True", call winner_check to judge the winner        
+        if judge == True:
+            winner_check(max(player_score,player_score2), max(dealer_score,dealer_score2))
+
+        
+def winner_check(player_score, dealer_score):
+    if player_score > dealer_score:
+        print "You win!!"
+    elif player_score < dealer_score:
+        print "Sorry You lose"
+    else:
+        print "******TIE******"
+    game_continue = False        
+
+
 while game_continue:
     player_decision = raw_input("You want to stand or hit? [s/h]\n>").lower() 
     if player_decision == "h":
@@ -115,29 +176,43 @@ while game_continue:
         player_card.append(card_giving())
         
         #update the card total score
-        dealer_score = score_cal(dealer_card)
+        # dealer_score = score_cal(dealer_card)
         player_score = score_cal(player_card)
-        dealer_score2 = score_cal_aeleven(dealer_card)
+        # dealer_score2 = score_cal_aeleven(dealer_card)
         player_score2 = score_cal_aeleven(player_card)
         
-        print frame_line
         current_stat()
-        print frame_line
-        
+
         if natural_check(player_score) or natural_check(player_score2):
-            print "Black Jack!"
-            break
-        elif bust_check(player_score) or bust_check(player_score2):
+            print "You got Black Jack!"
+            # dealer_play()
+            game_continue = False
+            
+        elif bust_check(player_score) and bust_check(player_score2):
             print "I'm sorry! You bust!!"
-            break
+            game_continue = False
             
     elif player_decision == "s":
+        dealer_score = score_cal(dealer_card)
+        dealer_score2 = score_cal_aeleven(dealer_card)
+        dealer_turn = True
+        dealer_play()
         break
 
 
-  
+print
+print
+print "Final result"
+print frame_line
+print "| Dealer's cards:{}, total:{}".format(dealer_card, dealer_score2)
+print "| {}'s cards:{}, total:{}".format(player_name, player_card, player_score)
+print frame_line
+
+    
+    
+    
 
 ###(additional feature if possible:) ###
 #card restriction: the standard 52-card pack is used
 #betting: player given chips by default (like $100?) and able to play with bets
-#card: instead of just showing numbers, visually making it look more like cards
+#cards appearance: instead of just showing numbers, visually making it look more like cards
