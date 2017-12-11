@@ -1,4 +1,4 @@
-#v11 code review
+#v12 option of doubling down added
 
 ###basic rule: dealer must draw on 16 and stand on 17###
 
@@ -44,14 +44,14 @@ game_continue = False
 # frame_line = " "+ "-" * (40 + hit_num)
 # judge = False
 who_win = ""
-#ask use if they want to continue to play
+#ask user if they want to continue to play
 continue_to_play = True
 #by default, give player $100
 # player_chip = 100
 round_count = 0
 #v8 new added. make it look like the dealer's speaking
 message_format ="\n... ((  Dealer says ))  "
-
+#v12 option for doubling down
 
 #recording
 myfile = open("record.txt", "a")
@@ -196,8 +196,6 @@ def current_stat(player_card, dealer_card):
         print "{}'s cards:".format(player_name)
         print_card(player_card)
         print "total:{}".format(player_score)
-    print
-
 
 ### Dealer's turn! basic rule: dealer must draw on 16 and stand on 17####
 def dealer_play():
@@ -251,6 +249,21 @@ def dealer_play():
         if judge == True:
             dealer_score_final = dealer_score
             winner_check(player_score_final, dealer_score_final)
+
+def final_stat(player_card, dealer_card):
+    print
+    print "Dealer's cards:" 
+    print_card(dealer_card)
+    print "total:{}".format(dealer_score_final)
+
+    # print "__________________________________________"
+    print
+    
+    print "{}'s cards:".format(player_name)
+    print_card(player_card)
+    print "total:{}".format(player_score_final)
+
+
 
 #if none of the pleayer or dealer got blackjack or bust, judge who is the winner        
 def winner_check(player_score, dealer_score):
@@ -309,7 +322,7 @@ while continue_to_play == True:
     round_count += 1
     #blackjack reset
     black_jack = False 
-    
+    double_down_option = False
     
     #player place a bet
     print "Hey {}! Now you have ${}".format(player_name, player_chip)
@@ -383,6 +396,9 @@ while continue_to_play == True:
     
     else:
         game_continue = True
+        if (9 <= player_score <= 11) and (player_chip >= place_bet * 2):
+            double_down_option = True
+        
     
     ######################### game first part: card seving  #######################
     
@@ -395,13 +411,32 @@ while continue_to_play == True:
       #if under 21: player can decide to Hit/ Stand --> 
       #----hit: continue the loop
       #----stand:  dealer's turn -> compare the sums -> determine lose or win
+    #Another option open to the player is doubling his bet when the original two cards dealt total 9, 10, or 11. 
+    #When the player's turn comes, he places a bet equal to the original bet, and the dealer gives him just one card.
+    
+    
     
 
     #game begins (user interface)
     #after first serving, player can deicide next step, to hit or stand
     while game_continue:
         
-        player_decision = raw_input("You want to stand or hit? [s/h]\n>").lower() 
+        #v12 option of doubling down added.
+        #it's an addtional option when player's original two cards dealt total 9, 10, or 11
+        if double_down_option:
+            player_decision = raw_input("""
+========================================== 
+                [s]tand 
+    options:    [h]it 
+                [d]ouble down 
+========================================== \n>""").lower()
+        else:
+            player_decision = raw_input("""
+========================================= 
+    options:    [s]tand                  
+                [h]it                    
+=========================================\n>""").lower() 
+        
         
         if player_decision == "h":
             #add one cand to player's cards
@@ -420,6 +455,7 @@ while continue_to_play == True:
                 player_score_final = 21
                 # dealer_turn = True
                 dealer_play()
+                final_stat(player_card, dealer_card)
                 game_continue = False
                 
             elif bust_check(player_score) and bust_check(player_score2):
@@ -428,6 +464,7 @@ while continue_to_play == True:
                 game_continue = False
                 dealer_score_final = dealer_score2
                 player_score_final = player_score
+                final_stat(player_card, dealer_card)
                 
         elif player_decision == "s":
             #if player_score2(counts A as 11) is not over 21, use it as the final score because it's the biggest number
@@ -441,6 +478,25 @@ while continue_to_play == True:
             dealer_score2 = score_cal_aeleven(dealer_card)
             # dealer_turn = True
             dealer_play()
+            final_stat(player_card, dealer_card)
+            game_continue = False  
+        
+        elif player_decision == "d":
+            place_bet = place_bet * 2
+            print "You've doubled your bet to ${}".format(place_bet)
+            player_card.append(card_giving())
+            
+            #update the score of player's cards
+            player_score = score_cal(player_card)
+            player_score2 = score_cal_aeleven(player_card)
+            
+            if player_score <= player_score2 <= 21:
+                player_score_final = player_score2
+            else:
+                player_score_final = player_score
+                
+            dealer_play()
+            final_stat(player_card, dealer_card)
             game_continue = False  
             
         else:
@@ -486,26 +542,14 @@ while continue_to_play == True:
     #         print_card(player_card)
     #         print "total:{}".format(player_score)
 
-    def final_stat(player_card, dealer_card):
-
-        print "Dealer's cards:" 
-        print_card(dealer_card)
-        print "total:{}".format(dealer_score_final)
     
-        # print "__________________________________________"
-        print
-        
-        print "{}'s cards:".format(player_name)
-        print_card(player_card)
-        print "total:{}".format(player_score_final)
-        
-        
+    print    
+    see_result = raw_input("Press enter to see the result of this round.\n")    
     
     print
     print "##########################################"
     print "               Final result               "
     print "##########################################"
-
     # print "Winner is......{}!".format(who_win)
     # print frame_line
     # print "| Dealer's cards:{}, total:{}".format(dealer_card, dealer_score2)
@@ -545,7 +589,12 @@ while continue_to_play == True:
         print "Have a nice day! {}!".format(player_name)
         
     elif continue_to_play_command == "y":
-        print "Great!\n .......Starting a new game..........\n"
+        print message_format, "Great!"
+        print """
+     --------------------------
+    |  Starting a new game...  |
+    |      Are you reday?      |
+     --------------------------"""
         pass
     
     else:
