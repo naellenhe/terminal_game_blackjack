@@ -1,4 +1,4 @@
-#v10 score module import
+#v11 code review
 
 ###basic rule: dealer must draw on 16 and stand on 17###
 
@@ -42,7 +42,7 @@ else:
 game_continue = False
 # hit_num = 0
 # frame_line = " "+ "-" * (40 + hit_num)
-judge = False
+# judge = False
 who_win = ""
 #ask use if they want to continue to play
 continue_to_play = True
@@ -54,7 +54,7 @@ message_format ="\n... ((  Dealer says ))  "
 
 
 #recording
-myfile = open("test.txt", "a")
+myfile = open("record.txt", "a")
 myfile.write("Player: {}\n".format(player_name))
 myfile.close()
 
@@ -119,7 +119,6 @@ def bust_check(total):
 
 #v5 fearture added: change the apprearance of dealer's face down card 
 def print_card(player_card):
-    global show_card
     player_card_amount = len(player_card)
     print_line_order = 1
     
@@ -131,11 +130,9 @@ def print_card(player_card):
                 sec_line = ""
                 for card in player_card[1:]:
                     if card == "10":
-                        show_card = card
-                        sec_line += "|{} ".format(show_card)
+                        sec_line += "|{} ".format(card)
                     else:
-                        show_card = card
-                        sec_line += "| {} ".format(show_card)
+                        sec_line += "| {} ".format(card)
     
                 print dline + sec_line + cline
             else:
@@ -147,12 +144,10 @@ def print_card(player_card):
             if print_line_order == 2:
                 for card in player_card:
                     if card == "10":
-                        show_card = card
-                        line = "|{}".format(show_card)
+                        line = "|{}".format(card)
                         print line,
                     else:
-                        show_card = card
-                        line = "| {}".format(show_card)
+                        line = "| {}".format(card)
                         print line,
                 print cline + "\t"
             else:
@@ -209,8 +204,8 @@ def dealer_play():
     global dealer_score
     global dealer_score2
     global dealer_score_final
-    global judge
     global who_win
+    judge = False
     
     if 21 > dealer_score2 >= 17 :
         winner_check(player_score_final, dealer_score2)
@@ -235,7 +230,7 @@ def dealer_play():
                 break
                 
             elif bust_check(dealer_score):
-                print message_format + "Dealer bust!!"
+                print message_format + "Dealer busts!!"
                 print message_format + "You are so lucky!"
                 who_win = player_name
                 judge = False
@@ -279,9 +274,8 @@ def winner_check(player_score, dealer_score):
 
 while continue_to_play == True:
     #cards appearance: instead of just showing numbers, making it look more like cards visually
-    show_card = " " 
     line1 = " ---"
-    line2 = "| {}".format(show_card)
+    line2 = "| {}"
     line3 = "|   "
     line4 = "|   "
     line5 = "|   "
@@ -524,7 +518,7 @@ while continue_to_play == True:
     
     
     #recording
-    myfile = open("test.txt", "a")
+    myfile = open("record.txt", "a")
     myfile.write("Round {:<4}Bet ($){:<5}Winner: {:<10}Remaining ($){:<6}\n".format(round_count, place_bet, who_win, player_chip))
     myfile.write("  Dealer {} ({})    \n  {} {} ({})\n\n".format(dealer_card, dealer_score_final, player_name, player_card, player_score_final))    
     myfile.close()
@@ -559,7 +553,7 @@ while continue_to_play == True:
     ######################### game result ############################
 
 #recording
-myfile = open("test.txt", "a")
+myfile = open("record.txt", "a")
 myfile.write("----------------------- new ------------------------\n")
 myfile.close()
 
