@@ -1,4 +1,11 @@
+#v6 new feature added: player given chips $100 by default and able to place a bet
+#v7 code clean up
+#v8 print format revision. welcome messege added
+#v9 file write-in feature added. set new final score variable
+#v10 score module import
+#v11 code review
 #v12 option of doubling down added
+#v13 using a whole deck of cards(52 cards), and each card only served once
 
 ###basic rule: dealer must draw on 16 and stand on 17###
 
@@ -12,7 +19,7 @@
 print """
      --------------------------
     |  Welcome to CASINO 2020  |
-    |      Are you reday?      |
+    |      Are you ready?      |
      --------------------------
 """
 
@@ -38,7 +45,7 @@ else:
     filehandler.write("\nrecord['{}'] = 100".format(player_name))
     filehandler.close()
 
-
+import random
 game_continue = False
 # hit_num = 0
 # frame_line = " "+ "-" * (40 + hit_num)
@@ -51,22 +58,18 @@ continue_to_play = True
 round_count = 0
 #v8 new added. make it look like the dealer's speaking
 message_format ="\n... ((  Dealer says ))  "
-#v12 option for doubling down
 
 #recording
 myfile = open("record.txt", "a")
 myfile.write("Player: {}\n".format(player_name))
 myfile.close()
 
-
-
-import random
-cards = {"A":1,"2":2,"3":3,"4":4,"5":5,"6":6,"7":7,"8":8,"9":9,"10":10,"J":10,"Q":10,"K":10}
-
 #card serving: choose a card randomly from list "cards"
 def card_giving():
-    player_card = random.choice(cards.keys()) 
-    return player_card
+    served_card = random.choice(cards_for_serving.keys())
+    #v13 once used, delete from the cards dict so it won't repeat
+    del cards_for_serving[served_card]
+    return served_card
 
 #calculate total score of received cards. in this function "A" counted as "1"
 #take player/dealer's card list as argument
@@ -115,7 +118,30 @@ def bust_check(total):
 #     print frame_line
 ######previoud code(for record only)###############
 
-
+#v13 when printing cards, show the symbols
+def show_card_symbol(symbol):
+    #card symbols
+    #white
+    # spade = u"\u2664".encode('utf-8')
+    # heart = u"\u2661".encode('utf-8')
+    # diamond = u"\u2662".encode('utf-8')
+    # club= u"\u2667".encode('utf-8')
+    #black
+    spade = u"\u2660".encode('utf-8')
+    heart = u"\u2665".encode('utf-8')
+    diamond = u"\u2666".encode('utf-8')
+    club= u"\u2663".encode('utf-8')
+    
+    if symbol == "s":
+        return spade
+    elif symbol == "h":
+        return heart
+    elif symbol == "d":
+        return diamond
+    elif symbol == "c":
+        return club
+    else:
+        return " "
 
 #v5 fearture added: change the apprearance of dealer's face down card 
 def print_card(player_card):
@@ -127,14 +153,21 @@ def print_card(player_card):
         for dline, line, cline in zip(dlines, lines, clines):
             #second print line contains numbers. if it's "10"(2 digit), use a different format to align with other cards
             if print_line_order == 2:
-                sec_line = ""
+                second_line = ""
                 for card in player_card[1:]:
-                    if card == "10":
-                        sec_line += "|{} ".format(card)
+                    if card[1:] == "10":
+                        second_line += "|{} ".format(card[1:])
                     else:
-                        sec_line += "| {} ".format(card)
-    
-                print dline + sec_line + cline
+                        second_line += "| {} ".format(card[1:])
+                print dline + second_line + cline
+                
+            #v13 print card symbol
+            elif print_line_order == 3:
+                third_line = ""
+                for card in player_card[1:]:
+                        third_line += "| {} ".format(show_card_symbol(card[:1]))
+                print dline + third_line + cline                
+                
             else:
                 print dline + line * (player_card_amount - 1) + cline
             print_line_order += 1
@@ -143,13 +176,20 @@ def print_card(player_card):
         for line, cline in zip(lines, clines):
             if print_line_order == 2:
                 for card in player_card:
-                    if card == "10":
-                        line = "|{}".format(card)
+                    if card[1:] == "10":
+                        line = "|{}".format(card[1:])
                         print line,
                     else:
-                        line = "| {}".format(card)
+                        line = "| {}".format(card[1:])
                         print line,
                 print cline + "\t"
+                
+            elif print_line_order == 3:
+                third_line = ""
+                for card in player_card:
+                        third_line += "| {} ".format(show_card_symbol(card[:1]))
+                print third_line + cline        
+                
             else:
                 print line * player_card_amount + cline
             print_line_order += 1
@@ -286,9 +326,20 @@ def winner_check(player_score, dealer_score):
 #############################  main code part below  ###################################
 
 while continue_to_play == True:
+    
+    #v13 card symber: s for spades, h for hearts, d for diamonds, c for clubss
+    cards = {"sA":1,"s2":2,"s3":3,"s4":4,"s5":5,"s6":6,"s7":7,"s8":8,"s9":9,"s10":10,"sJ":10,"sQ":10,"sK":10,
+             "hA":1,"h2":2,"h3":3,"h4":4,"h5":5,"h6":6,"h7":7,"h8":8,"h9":9,"h10":10,"hJ":10,"hQ":10,"hK":10,
+             "dA":1,"d2":2,"d3":3,"d4":4,"d5":5,"d6":6,"d7":7,"d8":8,"d9":9,"d10":10,"dJ":10,"dQ":10,"dK":10,
+             "cA":1,"c2":2,"c3":3,"c4":4,"c5":5,"c6":6,"c7":7,"c8":8,"c9":9,"c10":10,"cJ":10,"cQ":10,"cK":10,
+            }
+    #v13 copy the cards dict for serving/removing served cards
+    cards_for_serving = cards.copy()
+
+    
     #cards appearance: instead of just showing numbers, making it look more like cards visually
     line1 = " ---"
-    line2 = "| {}"
+    line2 = "|   "
     line3 = "|   "
     line4 = "|   "
     line5 = "|   "
@@ -322,6 +373,7 @@ while continue_to_play == True:
     round_count += 1
     #blackjack reset
     black_jack = False 
+    #v12 option for doubling down
     double_down_option = False
     
     #player place a bet
@@ -594,7 +646,8 @@ while continue_to_play == True:
      --------------------------
     |  Starting a new game...  |
     |      Are you reday?      |
-     --------------------------"""
+     --------------------------
+     """
         pass
     
     else:
