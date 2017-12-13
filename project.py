@@ -73,30 +73,39 @@ def card_giving():
 
 #calculate total score of received cards. in this function "A" counted as "1"
 #take player/dealer's card list as argument
-def score_cal(received_cards, total = 0):
+def score_cal(received_cards, score = 0):
     for card_key in received_cards:
-        total += cards[card_key]
-    return total
+        score += cards[card_key]
+    return score
 
 #same as above.second condition if contains "A", count as 11
-def score_cal_aeleven(player_card):
-    if "A" not in player_card:
-        return score_cal(player_card)
+def score_cal_aeleven(received_cards):
+    if check_ace_contain(received_cards):
+        return 10 + score_cal(received_cards)
     else:
-    # player_card.count("A")
-        return 10 + score_cal(player_card)
+        return score_cal(received_cards)        
+
+#13 check if ace contains, if so return True
+def check_ace_contain(received_cards):
+    for card in received_cards:
+        #if found "A" in any card's second character (card content: symbol + number)
+        if "A" in card[1:]:
+            return True
+            # break  #<-memo: once returned one value, for loop stops (unlike print)
+    else:
+        return False
 
 
 #check if it's a count of 21(a.k.a blackjack) of first two cards
-def natural_check(total):
-    if total == 21:
+def natural_check(score):
+    if score == 21:
         return True
     else:
         return False
 
 #if cards total value exceed 21, then judge it as "bust"        
-def bust_check(total):
-    if total > 21:
+def bust_check(score):
+    if score > 21:
         return True
     else:
         return False
@@ -217,25 +226,25 @@ def current_stat(player_card, dealer_card):
     dealer_card_copy = ["@"] + dealer_card[1:]
     
     #if "A" in cards, print two cases that A is counted as 1 and 11 respectively
-    if "A" in dealer_card_copy[1:]:
+    if check_ace_contain(dealer_card_copy):
         print "Dealer's cards:"
         print_card(dealer_card_copy)
-        print "total:{} or {}".format((dealer_score - dealer_hidden_card), (dealer_score2 - dealer_hidden_card))
+        print "score:{} or {}".format((dealer_score - dealer_hidden_card), (dealer_score2 - dealer_hidden_card))
     else:
         print "Dealer's cards:" 
         print_card(dealer_card_copy)
-        print "total:{}".format(dealer_score - dealer_hidden_card)
+        print "score:{}".format(dealer_score - dealer_hidden_card)
     
     print 
     
-    if "A" in player_card:
+    if check_ace_contain(player_card):
         print "{}'s cards:".format(player_name)
         print_card(player_card)
-        print "total:{} or {}".format(player_score, player_score2)
+        print "score:{} or {}".format(player_score, player_score2)
     else:
         print "{}'s cards:".format(player_name)
         print_card(player_card)
-        print "total:{}".format(player_score)
+        print "score:{}".format(player_score)
 
 ### Dealer's turn! basic rule: dealer must draw on 16 and stand on 17####
 def dealer_play():
@@ -258,13 +267,14 @@ def dealer_play():
             dealer_score2 = score_cal_aeleven(dealer_card)
             
             if natural_check(dealer_score) or natural_check(dealer_score2):
-                print message_format + "Dealer got 21!"
-                if player_score_final == 21:
-                    who_win = "TIE"
-                else:
-                    who_win = "Dealer"
+                print message_format + "Dealer's score got 21"
+                # if player_score_final == 21:
+                #     who_win = "TIE"
+                # else:
+                #     who_win = "Dealer"
                 judge = False
                 dealer_score_final = 21
+                winner_check(player_score_final, dealer_score_final)
                 break
                 
             elif bust_check(dealer_score):
@@ -276,9 +286,9 @@ def dealer_play():
                 break
             
             elif 21 > dealer_score2 >= 17:
-                winner_check(player_score_final, dealer_score2)
-                judge = False
                 dealer_score_final = dealer_score2
+                winner_check(player_score_final, dealer_score_final)
+                judge = False
                 break
             
             else:
@@ -294,14 +304,14 @@ def final_stat(player_card, dealer_card):
     print
     print "Dealer's cards:" 
     print_card(dealer_card)
-    print "total:{}".format(dealer_score_final)
+    print "score:{}".format(dealer_score_final)
 
     # print "__________________________________________"
     print
     
     print "{}'s cards:".format(player_name)
     print_card(player_card)
-    print "total:{}".format(player_score_final)
+    print "score:{}".format(player_score_final)
 
 
 
@@ -309,15 +319,15 @@ def final_stat(player_card, dealer_card):
 def winner_check(player_score, dealer_score):
     global who_win
     if player_score > dealer_score:
-        print message_format + "Congrats!!!"
+        print message_format + "Congrats!!! Yay! \(^.^)/"
         who_win = player_name
         
     elif player_score < dealer_score:
-        print message_format + "Sorry You lose."
+        print message_format + "Sorry You lose  <(._.)>"
         who_win = "Dealer"
         
     else:
-        print message_format + "TIE! Nice play!"
+        print message_format + "TIE! Nice play! d-(^_^)-b"
         who_win = "TIE"
     # game_continue = False     
 
@@ -503,7 +513,7 @@ while continue_to_play == True:
             current_stat(player_card, dealer_card)
     
             if natural_check(player_score) or natural_check(player_score2):
-                print message_format + "You got 21!"
+                print message_format + "Your score got 21"
                 player_score_final = 21
                 # dealer_turn = True
                 dealer_play()
@@ -552,7 +562,7 @@ while continue_to_play == True:
             game_continue = False  
             
         else:
-            print "!---Not a valid command. Input [s] to stand; [h] to hit---!"
+            print "!---Not a valid command. Select again---!"
             
     #betting result
     #multiplying "1.5" only when player has blackjack(first 2 served cards)
@@ -561,14 +571,14 @@ while continue_to_play == True:
         if black_jack == True:
             player_chip += place_bet * 1.5
             player_chip = int(ceil(player_chip)) 
-            print message_format + "You win ${}!".format(int(ceil(place_bet*1.5)))
+            print message_format + "You won ${}!".format(int(ceil(place_bet*1.5)))
         else:
             player_chip += place_bet
-            print message_format + "You win ${}!".format(place_bet)
+            print message_format + "You won ${}!".format(place_bet)
         
     elif who_win == "Dealer":
         player_chip -= place_bet
-        print message_format + "You lose ${}!".format(place_bet)        
+        print message_format + "You lost ${}!".format(place_bet)        
     
     
     ######################### game result ############################
@@ -609,13 +619,19 @@ while continue_to_play == True:
     # print frame_line
     final_stat(player_card, dealer_card)
     print "##########################################"
-    print "  Round {}    Winner: {}    ($)($){}".format(round_count, who_win, player_chip)
+    if who_win == player_name:
+        result = "WIN!"
+    elif who_win == "Dealer":
+        result = "LOSE"
+    else:
+        result = who_win
+    print "  Round {}    Result: {}    ($)($){}".format(round_count, result, player_chip)
     print "##########################################"
     
     
     #recording
     myfile = open("record.txt", "a")
-    myfile.write("Round {:<4}Bet ($){:<5}Winner: {:<10}Remaining ($){:<6}\n".format(round_count, place_bet, who_win, player_chip))
+    myfile.write("Round {:<4}Bet ($){:<5}Result: {:<10}Remaining ($){:<6}\n".format(round_count, place_bet, result, player_chip))
     myfile.write("  Dealer {} ({})    \n  {} {} ({})\n\n".format(dealer_card, dealer_score_final, player_name, player_card, player_score_final))    
     myfile.close()
     
@@ -645,7 +661,7 @@ while continue_to_play == True:
         print """
      --------------------------
     |  Starting a new game...  |
-    |      Are you reday?      |
+    |      Are you ready?      |
      --------------------------
      """
         pass
