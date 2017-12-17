@@ -6,6 +6,7 @@
 #v11 code review
 #v12 option of doubling down added
 #v13 using a whole deck of cards(52 cards), and each card only served once
+#v14 code review
 
 ###basic rule: dealer must draw on 16 and stand on 17###
 
@@ -14,6 +15,18 @@
 #it is up to each individual player if an ace is worth 1 or 11. 
 #face cards are 10 and any other card is its pip value.
 
+game_continue = False
+# hit_num = 0
+# frame_line = " "+ "-" * (40 + hit_num)
+# judge = False
+who_win = ""
+#ask user if they want to continue to play
+continue_to_play = True
+#by default, give player $100
+# player_chip = 100
+round_count = 0
+#v8 new added. make it look like the dealer's speaking
+message_format ="\n... ((  Dealer says ))  "
 
 #v8 welcome messege added
 print """
@@ -33,31 +46,20 @@ player_name = raw_input("What's your name: ").title()
 #v10 score module import
 import score
 if player_name in score.record.keys():
-    print "Welcome back!"
+    print message_format + "Welcome back! {}!".format(player_name)
     player_chip = score.record[player_name]
     if player_chip <= 0:
-        print "We are giving you $100 as a welcome back gift!"
+        print "\tWe are giving you $100 as a welcome back gift!"
         player_chip = 100
 else:
-    print "Welcome! New friend!"
+    print message_format + "Welcome! New friend!"
     player_chip = 100
     filehandler = open("score.py","a")
     filehandler.write("\nrecord['{}'] = 100".format(player_name))
     filehandler.close()
 
 import random
-game_continue = False
-# hit_num = 0
-# frame_line = " "+ "-" * (40 + hit_num)
-# judge = False
-who_win = ""
-#ask user if they want to continue to play
-continue_to_play = True
-#by default, give player $100
-# player_chip = 100
-round_count = 0
-#v8 new added. make it look like the dealer's speaking
-message_format ="\n... ((  Dealer says ))  "
+
 
 #recording
 myfile = open("record.txt", "a")
@@ -110,22 +112,6 @@ def bust_check(score):
     else:
         return False
 
-
-######previoud code(for record only)###############
-#to print out the current cards and sums
-# def current_stat():
-#     print frame_line
-#     #if cards contain "A", show two sums
-#     if "A" in dealer_card[1:]:
-#         print "| Dealer's cards:{}, total:{} or {}".format((["@"] + dealer_card[1:]), (dealer_score - dealer_hidden_card), (dealer_score2 - dealer_hidden_card))
-#     else:
-#         print "| Dealer's cards:{}, total:{}".format((["@"] + dealer_card[1:]), (dealer_score - dealer_hidden_card))
-#     if "A" in player_card:
-#         print "| {}'s cards:{}, total:{} or {}".format(player_name, player_card, player_score, player_score2)
-#     else:
-#         print "| {}'s cards:{}, total:{}".format(player_name, player_card, player_score)
-#     print frame_line
-######previoud code(for record only)###############
 
 #v13 when printing cards, show the symbols
 def show_card_symbol(symbol):
@@ -203,23 +189,6 @@ def print_card(player_card):
                 print line * player_card_amount + cline
             print_line_order += 1
 
-
-####################previous code######################
-#until player decided to Stand, dealer's first card should be faced down
-# def hidden_card(dealer_card):
-#     global show_card
-#     dealer_card_amount = len(dealer_card)
-#     print_line_order = 1
-#     for line, cline in zip(lines, clines):
-#         if print_line_order == 2:
-#             for card in dealer_card:
-#                 show_card = card
-#                 line = "| {}".format(show_card)
-#                 print line,
-#             print cline + "\t"
-#         else:
-#             print line * dealer_card_amount + cline
-#         print_line_order += 1
 
 def current_stat(player_card, dealer_card):
     #dealer's first card should face down. here use "@" to mark that card.
@@ -331,6 +300,23 @@ def winner_check(player_score, dealer_score):
         who_win = "TIE"
     # game_continue = False     
 
+############################ for checking purpose ##############################
+#show remaining cards
+def cards_serving_machine(player_card, dealer_card):
+        cards_remaining_list = cards_whole_pack[:]
+        cards_remaining_list = [card for card in cards_remaining_list if card not in (player_card + dealer_card)]
+
+        for suit in "shdc":
+            print_card([card for card in cards_remaining_list if card[0] == suit])
+
+#show the whole pack of cards
+cards_whole_pack = [
+    'sA', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10', 'sJ', 'sQ', 'sK', 
+    'hA', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'h10', 'hJ', 'hQ', 'hK', 
+    'dA', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8', 'd9', 'd10', 'dJ', 'dQ', 'dK', 
+    'cA', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10', 'cJ', 'cQ', 'cK'
+    ]
+
 
 #############################  functions above  ########################################
 #############################  main code part below  ###################################
@@ -345,7 +331,6 @@ while continue_to_play == True:
             }
     #v13 copy the cards dict for serving/removing served cards
     cards_for_serving = cards.copy()
-
     
     #cards appearance: instead of just showing numbers, making it look more like cards visually
     line1 = " ---"
@@ -368,7 +353,7 @@ while continue_to_play == True:
     
     #clines list means closing frame lines
     #random choice of emoticon: v3 feature added
-    emoticon = random.choice([":)", "<3", ":p", ":]", ":)", ":D", ":>", ":P", "=D", ":D", ":b"])
+    emoticon = random.choice([":)", ":p", ":]", ":)", ":D", ":>", ":P", "=D", ":D", ":b"])
     cline1 = "--- "
     cline2 = "   |"
     cline3 = "   |"
@@ -385,10 +370,15 @@ while continue_to_play == True:
     black_jack = False 
     #v12 option for doubling down
     double_down_option = False
-    
+
+    # want_to_see_cards_in_machine = raw_input("We are serving standard 52 cards! No repeat! ")
+    # if want_to_see_cards_in_machine == "check":
+    #     cards_serving_machine([], [])
+
+
     #player place a bet
-    print "Hey {}! Now you have ${}".format(player_name, player_chip)
-    place_bet = raw_input("How much do you want to bet? \n>$")
+    print message_format + "Now you have ${}".format(player_chip)
+    place_bet = raw_input("\tHow much do you want to bet? \nBet($) >")
     
     #check if it's all valid number or within available bet amount
     while not place_bet.isdigit() or not (player_chip >= int(place_bet) > 0):
@@ -427,7 +417,8 @@ while continue_to_play == True:
     dealer_score_final = 0
     player_score_final = 0
     
-    #print the current card set    
+    #print the current card set   
+    print message_format + "Cards serving\n" 
     current_stat(player_card, dealer_card)
     
     
@@ -610,7 +601,7 @@ while continue_to_play == True:
     
     print
     print "##########################################"
-    print "               Final result               "
+    print "###########   Final result    ############"
     print "##########################################"
     # print "Winner is......{}!".format(who_win)
     # print frame_line
@@ -662,8 +653,7 @@ while continue_to_play == True:
      --------------------------
     |  Starting a new game...  |
     |      Are you ready?      |
-     --------------------------
-     """
+     --------------------------"""
         pass
     
     else:
@@ -693,4 +683,7 @@ filehandler.close()
 #card restriction: the standard 52-card pack is used
 #betting: player given chips by default (like $100?) and able to play with bets
 #cards appearance: instead of just showing numbers, visually making it look more like cards
+
+
+
 
