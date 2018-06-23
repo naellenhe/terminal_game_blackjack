@@ -3,10 +3,12 @@
 ### Only use function to build blackjack
 
 #### Playing
-![play](1_play.png)
+<p align="center"><img src="static/1_play.png" width="400"/></p>
+
 
 #### Player stands
-![stand](2_stand.png)
+<p align="center"><img src="static/2_stand.png" width="400"/></p>
+
 
 #### Result
-![result](3_result)
+<p align="center"><img src="static/3_result.png" width="400"/></p>
